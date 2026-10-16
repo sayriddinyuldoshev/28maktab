@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>28-maktab | Dars jadvali</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef4ff;color:#19345b;font-family:Arial,sans-serif}
+header{background:linear-gradient(120deg,#10336b,#2877d4);color:white;padding:24px 16px;text-align:center}
+main{max-width:700px;margin:20px auto;padding:14px}
+.card{background:white;padding:20px;border-radius:18px;margin-bottom:16px;box-shadow:0 5px 20px #163d7012}
+input,button{font-size:16px;width:100%;padding:12px;margin:8px 0;border-radius:10px}
+input{border:1px solid #ccd8e9}
+button{border:0;background:#1656a5;color:white;font-weight:bold}
+button.remove{background:#b52d3a}
+img{width:100%;height:auto;border-radius:12px;margin-top:12px}
+small{color:#64748b;line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+<h1>🏫 28-maktab</h1>
+<p>Dars jadvali — rasm orqali</p>
+</header>
+<main>
+<div class="card">
+<h2>📷 Jadvalni kiritish</h2>
+<label for="sinf">Sinf nomi</label>
+<input id="sinf" placeholder="Masalan: 8-B">
+<label for="rasm">Jadval rasmini tanlang</label>
+<input id="rasm" type="file" accept="image/*">
+<button id="save">Jadvalni saqlash</button>
+<small>Rasm shu qurilmadagi brauzer xotirasida saqlanadi. Katta rasm tanlasangiz, xotira chegarasiga yetishi mumkin.</small>
+</div>
+<div class="card">
+<h2>📚 Saqlangan jadvallar</h2>
+<div id="list"></div>
+</div>
+<p><a href="index.html">← Bosh sahifaga qaytish</a></p>
+</main>
+<script>
+const key="maktab28_jadvallar";
+let selected="";
+const file=document.getElementById("rasm");
+file.addEventListener("change",()=>{
+ const f=file.files[0];
+ if(!f)return;
+ if(!f.type.startsWith("image/")){
+ alert("Rasm faylini tanlang.");return;
+ }
+ if(f.size>3*1024*1024){
+ alert("Rasm 3 MB dan kichik bo‘lsin.");file.value="";return;
+ }
+ const reader=new FileReader();
+ reader.onload=()=>{selected=reader.result;};
+ reader.readAsDataURL(f);
+});
+function getItems(){
+ try{return JSON.parse(localStorage.getItem(key)||"[]")}
+ catch(e){return []}
+}
+function show(){
+ const items=getItems();
+ document.getElementById("list").innerHTML="";
+ if(!items.length){
+ document.getElementById("list").textContent="Hali jadval kiritilmagan.";
+ return;
+ }
+ items.forEach((x,i)=>{
+ const box=document.createElement("div");
+ box.style.marginBottom="22px";
+ const title=document.createElement("h3");
+ title.textContent=x.sinf;
+ const image=document.createElement("img");
+ image.src=x.rasm;image.alt=x.sinf+" dars jadvali";
+ const del=document.createElement("button");
+ del.className="remove";del.textContent="O‘chirish";
+ del.onclick=()=>{
+ if(confirm(x.sinf+" jadvali o‘chirilsinmi?")){
+ const a=getItems();a.splice(i,1);
+ localStorage.setItem(key,JSON.stringify(a));show();
+ }
+ };
+ box.append(title,image,del);
+ document.getElementById("list").appendChild(box);
+ });
+}
+document.getElementById("save").onclick=()=>{
+ const sinf=document.getElementById("sinf").value.trim();
+ if(!sinf||!selected){alert("Sinf nomi va rasmni tanlang.");return;}
+ const items=getItems();
+ items.unshift({sinf,rasm:selected});
+ try{
+ localStorage.setItem(key,JSON.stringify(items));
+ }catch(e){
+ alert("Brauzer xotirasi yetarli emas. Kichikroq rasm tanlang.");
+ return;
+ }
+ document.getElementById("sinf").value="";
+ document.getElementById("rasm").value="";
+ selected="";
+ show();
+ alert("Jadval ushbu qurilmada saqlandi!");
+};
+show();
+</script>
+</body>
+</html>

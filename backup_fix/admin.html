@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>28-maktab | Admin panel</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+header{background:#075e45;color:white;padding:22px 16px}
+header h1{margin:0 0 6px;font-size:24px}
+main{max-width:850px;margin:20px auto;padding:0 14px}
+.card{background:white;padding:20px;border-radius:15px;margin-bottom:16px;box-shadow:0 3px 12px #0000000b}
+input,textarea{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccd5df;border-radius:9px;font-size:16px}
+textarea{min-height:120px;resize:vertical}
+button,.link{border:0;border-radius:9px;padding:11px 15px;background:#087f5b;color:white;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block;margin:3px}
+.danger{background:#c62828}
+.secondary{background:#526174}
+.small{font-size:13px;color:#64748b}
+.hidden{display:none}
+.item{border:1px solid #e2e8f0;border-radius:10px;padding:13px;margin-top:12px;overflow-wrap:anywhere}
+h2{margin-top:0}
+</style>
+
+<style id="maktab-common-menu-style">
+.maktab-menu{
+  background:#075e45;color:white;padding:12px;
+  display:flex;flex-wrap:wrap;gap:9px;
+  align-items:center;justify-content:center;
+  font-family:Arial,sans-serif;position:relative;z-index:10
+}
+.maktab-menu a{
+  color:white;text-decoration:none;padding:10px 13px;
+  border-radius:8px;background:#ffffff20;font-size:15px
+}
+.maktab-menu a:hover{background:#ffffff38}
+.maktab-menu .brand{font-weight:bold;margin-right:8px}
+@media(max-width:480px){
+  .maktab-menu{gap:6px;padding:10px 6px}
+  .maktab-menu a{padding:9px;font-size:13px}
+}
+</style>
+
+</head>
+<body>
+
+<nav class="maktab-menu" aria-label="Asosiy menyu">
+  <span class="brand">🏫 28-MAKTAB</span>
+  <a href="index.html">Bosh sahifa</a>
+  <a href="yangiliklar.html">Yangiliklar</a>
+  <a href="test.html">Bilimni sinash</a>
+  <a href="jadval.html">Dars jadvali</a>
+  <a href="admin.html">Admin panel</a>
+</nav>
+
+<header>
+<h1>🏫 28-maktab</h1>
+<div>Administrator boshqaruv paneli</div>
+</header>
+
+<main>
+<section id="login" class="card">
+<h2>🔐 Admin kirish</h2>
+<p class="small">Boshlang‘ich parol: 2800</p>
+<input id="password" type="password" placeholder="Admin parolini kiriting">
+<button onclick="login()">Kirish</button>
+<p id="loginError" style="color:#c62828"></p>
+</section>
+
+<section id="panel" class="hidden">
+<div class="card">
+<h2>📢 Yangi maktab yangiligi</h2>
+<form id="newsForm">
+<label>Sarlavha</label>
+<input id="title" required maxlength="120" placeholder="Masalan: Maktabda sport musobaqasi">
+<label>Yangilik matni</label>
+<textarea id="body" required maxlength="5000" placeholder="Yangilik haqida yozing..."></textarea>
+<button type="submit">➕ Yangilik qo‘shish</button>
+<button type="button" class="secondary" onclick="clearForm()">Tozalash</button>
+</form>
+<p class="small">Yangiliklar ushbu brauzer xotirasida saqlanadi.</p>
+</div>
+
+<div class="card">
+<h2>📰 Yangiliklarni boshqarish</h2>
+<div id="newsList"></div>
+</div>
+
+<div class="card">
+<h2>🔗 Sayt sahifalari</h2>
+<a class="link" href="index.html">Bosh sahifa</a>
+<a class="link" href="yangiliklar.html">Yangiliklar</a>
+<a class="link" href="test.html">Bilimni sinash</a>
+<a class="link" href="jadval.html">Dars jadvali</a>
+<button class="secondary" onclick="logout()">Chiqish</button>
+</div>
+</section>
+</main>
+
+<script>
+const KEY = "28maktab_admin_news_v1";
+const PASS_KEY = "28maktab_admin_password";
+let editingId = null;
+
+function login(){
+  const saved = localStorage.getItem(PASS_KEY) || "2800";
+  if(document.getElementById("password").value === saved){
+    sessionStorage.setItem("28maktab_admin_logged_in","yes");
+    showPanel();
+  } else {
+    document.getElementById("loginError").textContent="Parol noto‘g‘ri!";
+  }
+}
+function showPanel(){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("panel").classList.remove("hidden");
+  renderNews();
+}
+function logout(){
+  sessionStorage.removeItem("28maktab_admin_logged_in");
+  location.reload();
+}
+function getNews(){
+  try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return []}
+}
+function saveNews(list){
+  localStorage.setItem(KEY,JSON.stringify(list));
+}
+function clearForm(){
+  editingId=null;
+  document.getElementById("newsForm").reset();
+  document.querySelector('#newsForm button[type="submit"]').textContent="➕ Yangilik qo‘shish";
+}
+document.getElementById("newsForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  const title=document.getElementById("title").value.trim();
+  const body=document.getElementById("body").value.trim();
+  if(!title||!body)return;
+  const list=getNews();
+  if(editingId!==null){
+    const i=list.findIndex(n=>n.id===editingId);
+    if(i!==-1){list[i].title=title;list[i].body=body;}
+  }else{
+    list.unshift({id:Date.now(),title,body,date:new Date().toLocaleDateString("uz-UZ")});
+  }
+  saveNews(list);
+  clearForm();
+  renderNews();
+});
+function editNews(id){
+  const n=getNews().find(x=>x.id===id);
+  if(!n)return;
+  editingId=id;
+  document.getElementById("title").value=n.title;
+  document.getElementById("body").value=n.body;
+  document.querySelector('#newsForm button[type="submit"]').textContent="💾 O‘zgarishlarni saqlash";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function deleteNews(id){
+  if(!confirm("Ushbu yangilik o‘chirilsinmi?"))return;
+  saveNews(getNews().filter(n=>n.id!==id));
+  renderNews();
+}
+function renderNews(){
+  const list=getNews();
+  const box=document.getElementById("newsList");
+  box.replaceChildren();
+  if(!list.length){
+    box.textContent="Hozircha admin orqali qo‘shilgan yangilik yo‘q.";
+    return;
+  }
+  list.forEach(n=>{
+    const item=document.createElement("div");
+    item.className="item";
+    const h=document.createElement("h3");h.textContent=n.title;
+    const date=document.createElement("div");date.className="small";date.textContent=n.date||"";
+    const p=document.createElement("p");p.style.whiteSpace="pre-wrap";p.textContent=n.body;
+    const edit=document.createElement("button");edit.textContent="✏️ Tahrirlash";edit.onclick=()=>editNews(n.id);
+    const del=document.createElement("button");del.textContent="🗑 O‘chirish";del.className="danger";del.onclick=()=>deleteNews(n.id);
+    item.append(h,date,p,edit,del);box.appendChild(item);
+  });
+}
+if(sessionStorage.getItem("28maktab_admin_logged_in")==="yes")showPanel();
+</script>
+</body>
+</html>

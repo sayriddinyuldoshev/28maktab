@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>28-maktab | Yangiliklar</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fffaf0;color:#173b32;font-family:Arial,sans-serif}
+header{background:#075e54;color:white;text-align:center;padding:25px 12px;border-bottom:4px solid #d8ad55}
+main{max-width:760px;margin:auto;padding:16px}
+.card{background:white;border:1px solid #e5d8b8;border-radius:16px;padding:18px;margin:16px 0;box-shadow:0 3px 12px #00000008}
+.tag{color:#997326;font-size:13px;font-weight:bold}
+h2{margin:10px 0}
+.date{font-size:13px;color:#718078}
+.reactions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.reactions button{background:#f4f0e4;color:#173b32;border:1px solid #dfd1ad;border-radius:22px;padding:9px 12px;font-size:16px}
+.reactions button.active{background:#d5eee4;border-color:#087f70}
+input,textarea{width:100%;padding:12px;border:1px solid #cbbd9c;border-radius:9px;font:inherit;margin:7px 0}
+textarea{min-height:85px;resize:vertical}
+.primary{background:#075e54;color:white;border:0;border-radius:9px;padding:12px 16px;font-size:15px}
+.comment{padding:12px 0;border-top:1px solid #eee5d2;overflow-wrap:anywhere}
+.comment strong{display:block;margin-bottom:5px}
+.note{background:#f4eedb;border-radius:10px;padding:12px;font-size:14px}
+footer{text-align:center;background:#075e54;color:white;padding:18px;margin-top:20px}
+</style>
+
+<style id="maktab-common-menu-style">
+.maktab-menu{
+  background:#075e45;color:white;padding:12px;
+  display:flex;flex-wrap:wrap;gap:9px;
+  align-items:center;justify-content:center;
+  font-family:Arial,sans-serif;position:relative;z-index:10
+}
+.maktab-menu a{
+  color:white;text-decoration:none;padding:10px 13px;
+  border-radius:8px;background:#ffffff20;font-size:15px
+}
+.maktab-menu a:hover{background:#ffffff38}
+.maktab-menu .brand{font-weight:bold;margin-right:8px}
+@media(max-width:480px){
+  .maktab-menu{gap:6px;padding:10px 6px}
+  .maktab-menu a{padding:9px;font-size:13px}
+}
+</style>
+
+</head>
+<body>
+
+<nav class="maktab-menu" aria-label="Asosiy menyu">
+  <span class="brand">🏫 28-MAKTAB</span>
+  <a href="index.html">Bosh sahifa</a>
+  <a href="yangiliklar.html">Yangiliklar</a>
+  <a href="test.html">Bilimni sinash</a>
+  <a href="jadval.html">Dars jadvali</a>
+  <a href="admin.html">Admin panel</a>
+</nav>
+
+<header>
+<h1>🇺🇿 28-MAKTAB</h1>
+<div>Maktab yangiliklari va o‘quvchilar fikri</div>
+</header>
+<main>
+<div class="note">📰 Maktab hayotidagi yangiliklarni kuzating, reaksiya bildiring va odob bilan fikr yozing.</div>
+<div id="news"></div>
+</main>
+<footer>✳ 28-MAKTAB ✳ Bilim va tarbiya maskani</footer>
+<script>
+const initialNews=[
+{
+id:1,
+title:"28-maktab yangiliklari",
+date:"15.10.2026",
+text:"28-maktabning yangi xabarlari shu sahifada e’lon qilinadi. Maktabdagi tadbirlar, fan olimpiadalari, sport musobaqalari va boshqa yangiliklarni shu yerga qo‘shishingiz mumkin."
+},
+{
+id:2,
+title:"Bilim va sport",
+date:"15.10.2026",
+text:"O‘quvchilarni fanlarni puxta o‘rganishga, sport bilan shug‘ullanishga va maktab hayotida faol qatnashishga chorlaymiz."
+}
+];
+const reactionList=["❤️","👍","😂","😮"];
+const storageKey="28maktab_news_v1";
+let data;
+try{
+data=JSON.parse(localStorage.getItem(storageKey))||{};
+}catch(e){data={};}
+if(!data.posts)data.posts=initialNews;
+if(!data.reactions)data.reactions={};
+if(!data.comments)data.comments={};
+try{localStorage.setItem(storageKey,JSON.stringify(data));}catch(e){}
+
+function save(){
+try{
+localStorage.setItem(storageKey,JSON.stringify(data));
+}catch(e){
+alert("Saqlash uchun brauzer xotirasi yetarli emas.");
+}
+}
+function escapeHTML(s){
+return String(s).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+}
+function render(){
+const root=document.getElementById("news");
+root.innerHTML="";
+data.posts.forEach(post=>{
+const card=document.createElement("article");
+card.className="card";
+card.innerHTML=`
+<div class="tag">📢 MAKTAB XABARI</div>
+<h2>${escapeHTML(post.title)}</h2>
+<div class="date">📅 ${escapeHTML(post.date)}</div>
+${post.image ? `<img src="${escapeHTML(post.image)}" alt="Yangilik rasmi" loading="lazy" style="display:block;width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin:12px 0">` : ""}
+<p style="line-height:1.7;white-space:pre-wrap">${escapeHTML(post.text)}</p>
+<div class="reactions" id="reactions-${post.id}"></div>
+<h3>💬 Fikrlar</h3>
+<div id="comments-${post.id}"></div>
+<form id="form-${post.id}">
+<input name="name" maxlength="35" placeholder="Ismingiz yoki taxallusingiz" required>
+<textarea name="comment" maxlength="500" placeholder="Fikringizni yozing..." required></textarea>
+<button class="primary" type="submit">Fikrni yuborish</button>
+</form>
+`;
+root.appendChild(card);
+const rbox=card.querySelector("#reactions-"+post.id);
+reactionList.forEach(emoji=>{
+const arr=data.reactions[post.id]||{};
+const btn=document.createElement("button");
+btn.type="button";
+btn.className=arr[emoji]&&arr[emoji].mine?"active":"";
+btn.textContent=emoji+" "+((arr[emoji]&&arr[emoji].count)||0);
+btn.onclick=()=>{
+if(!data.reactions[post.id])data.reactions[post.id]={};
+let item=data.reactions[post.id][emoji]||{count:0,mine:false};
+if(item.mine){item.count=Math.max(0,item.count-1);item.mine=false;}
+else{item.count++;item.mine=true;}
+data.reactions[post.id][emoji]=item;
+save();render();
+};
+rbox.appendChild(btn);
+});
+const comments=card.querySelector("#comments-"+post.id);
+(data.comments[post.id]||[]).forEach(c=>{
+const div=document.createElement("div");
+div.className="comment";
+div.innerHTML="<strong>"+escapeHTML(c.name)+"</strong><div style='white-space:pre-wrap'>"+escapeHTML(c.text)+"</div><div class='date'>"+escapeHTML(c.date)+"</div>";
+comments.appendChild(div);
+});
+card.querySelector("form").onsubmit=e=>{
+e.preventDefault();
+const f=e.currentTarget;
+const name=f.elements.name.value.trim();
+const text=f.elements.comment.value.trim();
+if(!name||!text)return;
+if(!data.comments[post.id])data.comments[post.id]=[];
+data.comments[post.id].push({
+name:name,text:text,
+date:new Date().toLocaleString("uz-UZ")
+});
+save();render();
+};
+});
+}
+render();
+</script>
+</body>
+</html>
