@@ -195,15 +195,15 @@ function saveNews(list){
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 function clearForm(){
-  editingId=null;
+  editingId = null;
   document.getElementById("newsForm").reset();
   selectedImage = "";
   const preview = document.getElementById("imagePreview");
-  if (preview) { preview.src = ""; preview.style.display = "none"; }
-  selectedImage = "";
-  const preview = document.getElementById("imagePreview");
-  if (preview) { preview.src = ""; preview.style.display = "none"; }
-  document.querySelector('#newsForm button[type="submit"]').textContent="➕ Yangilik qo‘shish";
+  if (preview) {
+    preview.src = "";
+    preview.style.display = "none";
+  }
+  document.querySelector('#newsForm button[type="submit"]').textContent = "➕ Yangilik qo‘shish";
 }
 document.getElementById("newsForm").addEventListener("submit",function(e){
   e.preventDefault();
