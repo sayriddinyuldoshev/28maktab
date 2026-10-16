@@ -145,7 +145,7 @@ document.getElementById("imageInput").addEventListener("change", function(){
 });
 
 function login(){
-  const saved = localStorage.getItem(PASS_KEY) || "2011";
+  const saved = "2011";
   if(document.getElementById("password").value === saved){
     sessionStorage.setItem("28maktab_admin_logged_in","yes");
     showPanel();
