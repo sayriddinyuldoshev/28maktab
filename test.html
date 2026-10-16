@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>28-maktab | Bilimni sinash</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fffaf0;color:#193b35;font-family:Arial,sans-serif}
+header{background:#075e54;color:white;text-align:center;padding:24px 12px;border-bottom:4px solid #d9ad55}
+header h1{margin:0 0 8px}
+main{max-width:850px;margin:auto;padding:18px}
+.panel{background:white;padding:18px;border-radius:15px;border:1px solid #e4d6b7;margin-bottom:16px}
+select,button{padding:12px;border-radius:9px;font-size:16px;max-width:100%}
+select{width:100%;border:1px solid #cbb77e;margin:10px 0}
+button{background:#075e54;color:white;border:0;cursor:pointer}
+button:disabled{opacity:.5}
+.answers{display:grid;gap:10px;margin:18px 0}
+.answers button{text-align:left;background:#f5f0e3;color:#193b35;border:1px solid #d8cba9}
+.answers button.selected{background:#087f70;color:white}
+.answers button.correct{background:#18834a;color:white}
+.answers button.wrong{background:#b63838;color:white}
+.row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.small{color:#60756c;font-size:14px}
+#question{line-height:1.6}
+footer{text-align:center;padding:20px;background:#075e54;color:white;border-top:4px solid #d9ad55}
+</style>
+
+<style id="maktab-common-menu-style">
+.maktab-menu{
+  background:#075e45;color:white;padding:12px;
+  display:flex;flex-wrap:wrap;gap:9px;
+  align-items:center;justify-content:center;
+  font-family:Arial,sans-serif;position:relative;z-index:10
+}
+.maktab-menu a{
+  color:white;text-decoration:none;padding:10px 13px;
+  border-radius:8px;background:#ffffff20;font-size:15px
+}
+.maktab-menu a:hover{background:#ffffff38}
+.maktab-menu .brand{font-weight:bold;margin-right:8px}
+@media(max-width:480px){
+  .maktab-menu{gap:6px;padding:10px 6px}
+  .maktab-menu a{padding:9px;font-size:13px}
+}
+</style>
+
+</head>
+<body>
+
+<nav class="maktab-menu" aria-label="Asosiy menyu">
+  <span class="brand">🏫 28-MAKTAB</span>
+  <a href="index.html">Bosh sahifa</a>
+  <a href="yangiliklar.html">Yangiliklar</a>
+  <a href="test.html">Bilimni sinash</a>
+  <a href="jadval.html">Dars jadvali</a>
+  <a href="admin.html">Admin panel</a>
+</nav>
+
+<header>
+<h1>🇺🇿 28-MAKTAB</h1>
+<div>Bilimni sinash markazi</div>
+</header>
+<main>
+<section class="panel" id="setup">
+<h2>📚 Fanni tanlang</h2>
+<p class="small">Har bir testda 20 ta savol beriladi.</p>
+<select id="subject">
+<option value="math">Matematika</option>
+<option value="uzbek">Ona tili</option>
+<option value="literature">Adabiyot</option>
+<option value="english">Ingliz tili</option>
+<option value="russian">Rus tili</option>
+<option value="history">Tarix</option>
+<option value="uzhistory">O‘zbekiston tarixi</option>
+<option value="geography">Geografiya</option>
+<option value="biology">Biologiya</option>
+<option value="physics">Fizika</option>
+<option value="chemistry">Kimyo</option>
+<option value="informatics">Informatika</option>
+</select>
+<button onclick="start()">Testni boshlash</button>
+</section>
+
+<section class="panel" id="quiz" hidden>
+<div class="row">
+<strong id="progress">Savol 1/20</strong>
+<strong id="score">To‘g‘ri: 0</strong>
+</div>
+<div style="height:7px;background:#eee;margin:15px 0;border-radius:8px">
+<div id="bar" style="height:7px;width:0;background:#087f70;border-radius:8px"></div>
+</div>
+<h3 id="question"></h3>
+<div class="answers" id="answers"></div>
+<button id="next" onclick="nextQuestion()" disabled>Keyingi savol →</button>
+</section>
+
+<section class="panel" id="result" hidden>
+<h2>🏆 Test yakunlandi!</h2>
+<h3 id="finalscore"></h3>
+<p id="message"></p>
+<button onclick="back()">Boshqa fan tanlash</button>
+</section>
+</main>
+<footer>✳ ❖ ✳ 28-MAKTAB ✳ ❖ ✳</footer>
+
+<script>
+const facts = {
+math:[
+["7 × 8 nechaga teng?","56",["54","48","64"]],
+["144 ning kvadrat ildizi nechchi?","12",["14","11","16"]],
+["3² + 4² nechaga teng?","25",["12","24","49"]],
+["1/2 + 1/4 nechaga teng?","3/4",["2/6","1/6","1/4"]],
+["200 ning 15 foizi qancha?","30",["15","20","35"]],
+["5x=35 bo‘lsa, x nechchi?","7",["5","6","8"]],
+["Uchburchak burchaklari yig‘indisi?","180°",["90°","360°","270°"]],
+["1 kilometr necha metr?","1000",["100","10","10000"]],
+["Eng kichik tub son qaysi?","2",["1","3","0"]],
+["12 × 12 nechaga teng?","144",["124","132","154"]],
+["2³ nechaga teng?","8",["6","9","4"]],
+["1 soat necha daqiqa?","60",["100","30","24"]],
+["Kvadratning 4 tomoni qanday?","Teng",["Har xil","Faqat ikkitasi teng","Uchta teng"]],
+["0,5 kasrining oddiy ko‘rinishi?","1/2",["1/5","2/5","5/10"]],
+["9² nechaga teng?","81",["18","72","99"]],
+["80 ning yarmi qancha?","40",["20","30","60"]],
+["To‘g‘ri burchak necha gradus?","90°",["45°","180°","360°"]],
+["7 + 8 × 2 nechaga teng?","23",["30","22","46"]],
+["Eng katta ikki xonali son?","99",["100","90","89"]],
+["3x=21 bo‘lsa, x nechchi?","7",["6","8","9"]]
+],
+uzbek:[
+["Ot nimani bildiradi?","Shaxs, narsa va joy nomini",["Harakatni","Belgini","Miqdorni"]],
+["Fe’l nimani bildiradi?","Harakat yoki holatni",["Narsa nomini","Belgini","Sonni"]],
+["Sifat nimani bildiradi?","Belgini",["Harakatni","Miqdorni","Joyni"]],
+["Son nimani bildiradi?","Miqdor yoki tartibni",["Harakatni","Belgini","Narsa nomini"]],
+["“Kitoblar” so‘zidagi ko‘plik qo‘shimchasi?","-lar",["-ning","-ni","-ga"]],
+["Gapning bosh harf bilan yoziladigan qismi?","Gapning birinchi so‘zi",["Har bir so‘z","Faqat fe’l","Faqat ot"]],
+["“Chiroyli” qaysi so‘z turkumi?","Sifat",["Ot","Fe’l","Son"]],
+["“Yugurdi” qaysi so‘z turkumi?","Fe’l",["Ot","Sifat","Olmosh"]],
+["Sinonim so‘zlar qanday bo‘ladi?","Ma’nodosh",["Qarama-qarshi","Shakldosh","Bir xil yozilmaydigan"]],
+["Antonim so‘zlar qanday bo‘ladi?","Qarama-qarshi ma’noli",["Ma’nodosh","Bir xil ma’noli","Faqat otlar"]],
+["“Men” qaysi so‘z turkumi?","Olmosh",["Fe’l","Sifat","Ravish"]],
+["Darak gap oxiriga ko‘pincha nima qo‘yiladi?","Nuqta",["Vergul","Ikki nuqta","Tire"]],
+["Undov gap oxiriga nima qo‘yilishi mumkin?","Undov belgisi",["Faqat vergul","Qavs","Nuqtali vergul"]],
+["“Maktabga” so‘zidagi kelishik?","Jo‘nalish",["Tushum","Chiqish","Qaratqich"]],
+["“Tez” so‘zi qaysi turkumda kelishi mumkin?","Ravish",["Faqat son","Faqat olmosh","Bog‘lovchi"]],
+["Unli tovushlar qanday aytiladi?","To‘siqsiz",["Kuchli to‘siq bilan","Faqat shovqin bilan","Aytilmaydi"]],
+["O‘zbek alifbosida nechta harf bor?","29",["26","31","33"]],
+["“Va” qanday so‘z?","Bog‘lovchi",["Fe’l","Sifat","Son"]],
+["Ega gapning qaysi bo‘lagi?","Bosh bo‘lak",["Ikkinchi darajali bo‘lak","Undalma","Kirish so‘z"]],
+["“Bolalar maktabga bordi” gapining egasi?","Bolalar",["Maktabga","Bordi","Maktab"]]
+],
+literature:[
+["“Xamsa” asarining muallifi kim?","Alisher Navoiy",["Bobur","Muqimiy","Furqat"]],
+["“Boburnoma” kim tomonidan yozilgan?","Zahiriddin Muhammad Bobur",["Navoiy","Oybek","Qodiriy"]],
+["“O‘tkan kunlar” romanining muallifi?","Abdulla Qodiriy",["Cho‘lpon","Oybek","G‘afur G‘ulom"]],
+["“Shum bola” asari muallifi?","G‘afur G‘ulom",["Navoiy","Bobur","Hamza"]],
+["She’r yozuvchi ijodkor kim?","Shoir",["Rassom","Me’mor","Tarjimon"]],
+["Hikoya qanday asar?","Nasriy janr",["Musiqa turi","Raqs turi","Rasm turi"]],
+["Alisher Navoiy qaysi davrda yashagan?","XV asrda",["X asrda","XX asrda","VII asrda"]],
+["“Mehrobdan chayon” muallifi?","Abdulla Qodiriy",["Oybek","Cho‘lpon","Hamza"]],
+["“Kecha va kunduz” romanining muallifi?","Cho‘lpon",["Bobur","Navoiy","Qodiriy"]],
+["Maqol nima?","Qisqa hikmatli xalq iborasi",["Roman","Doston","Lug‘at"]],
+["Doston qanday asar?","Yirik she’riy yoki nasriy asar",["Faqat maqol","Faqat topishmoq","Xat turi"]],
+["Ertaklarda ko‘pincha nima uchraydi?","Xayoliy voqealar",["Faqat ilmiy formula","Faqat qonun","Faqat jadval"]],
+["“Alpomish” qanday asar?","Xalq dostoni",["Roman","Masal","Drama"]],
+["Dramatik asar nima uchun mo‘ljallangan?","Sahnada ijro etish uchun",["Faqat xarita uchun","Hisoblash uchun","Lug‘at uchun"]],
+["Adabiyotning asosiy vositalaridan biri?","Badiiy so‘z",["Faqat raqam","Faqat chizma","Faqat formula"]],
+["Masal janrida ko‘pincha kimlar orqali fikr beriladi?","Hayvonlar obrazlari",["Faqat sayyoralar","Faqat sonlar","Faqat buyumlar ro‘yxati"]],
+["“Qutlug‘ qon” romanini kim yozgan?","Oybek",["Bobur","Navoiy","Furqat"]],
+["G‘azal ko‘proq qaysi shaklda yoziladi?","She’riy",["Jadval","Xarita","Ilmiy formula"]],
+["Muallif kim?","Asarni yaratgan kishi",["Kitobxon","Nashriyot binosi","Kutubxona"]],
+["Asarning asosiy fikri nima deyiladi?","G‘oya",["Muqova","Sahifa","Sarlavha"]]
+],
+english:[
+["“Book” so‘zining tarjimasi?","Kitob",["Daftar","Qalam","Maktab"]],
+["I ___ a student.","am",["is","are","be"]],
+["She ___ my sister.","is",["am","are","be"]],
+["They ___ football.","play",["plays","playing","is play"]],
+["“Go” fe’lining o‘tgan zamoni?","went",["goed","gone","going"]],
+["“Apple” so‘zining tarjimasi?","Olma",["Uzum","Nok","Shaftoli"]],
+["“Big” so‘zining antonimi?","Small",["Tall","Large","Long"]],
+["He ___ got a pen.","has",["have","am","are"]],
+["“Children” birlik shakli?","Child",["Childs","Childes","Children"]],
+["“Good” so‘zining qiyosiy darajasi?","Better",["Gooder","Best","More good"]],
+["We ___ learning English now.","are",["is","am","be"]],
+["“Teacher” tarjimasi?","O‘qituvchi",["Shifokor","Haydovchi","Dehqon"]],
+["“Monday” haftaning qaysi kuni?","Dushanba",["Juma","Yakshanba","Chorshanba"]],
+["There ___ two books.","are",["is","am","be"]],
+["“I have” tarjimasi?","Menda bor",["Men boraman","Men edim","Men ko‘raman"]],
+["“Fast” so‘zining tarjimasi?","Tez",["Sekin","Katta","Kech"]],
+["What is your name?","Isming nima?",["Qayerda yashaysan?","Yoshing nechada?","Soat nechchi?"]],
+["“Beautiful” tarjimasi?","Chiroyli",["Xunuk","Sovuq","Qimmat"]],
+["Past Simple fe’li: “see”","saw",["seed","seen","seeing"]],
+["“Thank you” tarjimasi?","Rahmat",["Salom","Xayr","Iltimos"]]
+],
+russian:[
+["“Книга” tarjimasi?","Kitob",["Daftar","Qalam","Maktab"]],
+["“Я” olmoshi tarjimasi?","Men",["Sen","Ular","Biz"]],
+["“Мы” tarjimasi?","Biz",["Men","Sen","U"]],
+["“Красный” tarjimasi?","Qizil",["Ko‘k","Yashil","Oq"]],
+["“Большой” so‘zining antonimi?","Маленький",["Высокий","Длинный","Широкий"]],
+["“Спасибо” tarjimasi?","Rahmat",["Salom","Xayr","Kechirasiz"]],
+["“Здравствуйте” nimani anglatadi?","Assalomu alaykum",["Xayr","Rahmat","Iltimos"]],
+["“Один” qaysi son?","Bir",["Ikki","Uch","To‘rt"]],
+["“Пять” qaysi son?","Besh",["Olti","Yetti","To‘qqiz"]],
+["“Мама” tarjimasi?","Ona",["Ota","Aka","Singil"]],
+["“Школа” tarjimasi?","Maktab",["Uy","Ko‘cha","Do‘kon"]],
+["“Солнце” tarjimasi?","Quyosh",["Oy","Yulduz","Bulut"]],
+["“Вода” tarjimasi?","Suv",["Olov","Havo","Tuproq"]],
+["“Хорошо” tarjimasi?","Yaxshi",["Yomon","Tez","Kech"]],
+["“Друг” tarjimasi?","Do‘st",["Dushman","Ustoz","Qo‘shni"]],
+["“Кошка” tarjimasi?","Mushuk",["It","Ot","Sigir"]],
+["“Зима” tarjimasi?","Qish",["Yoz","Bahor","Kuz"]],
+["“Красивый” qaysi so‘z turkumi?","Sifat",["Fe’l","Son","Olmosh"]],
+["“Я читаю” tarjimasi?","Men o‘qiyapman",["Men yozdim","Men yugurdim","Men uxlayapman"]],
+["“До свидания” tarjimasi?","Xayr",["Salom","Rahmat","Iltimos"]]
+],
+history:[
+["Qadimgi Misr qaysi daryo bo‘yida rivojlangan?","Nil",["Amudaryo","Volga","Gang"]],
+["Buyuk Ipak yo‘li nima bo‘lgan?","Savdo yo‘li",["Faqat daryo","Tog‘ nomi","Qal’a"]],
+["Piramidalar qaysi hudud bilan mashhur?","Misr",["Hindiston","Xitoy","Yaponiya"]],
+["Rim imperiyasi qaysi qit’ada vujudga kelgan?","Yevropa",["Avstraliya","Antarktida","Janubiy Amerika"]],
+["Tarix nimani o‘rganadi?","O‘tmish voqealarini",["Faqat kelajakni","Faqat matematikani","Faqat ob-havoni"]],
+["Arxeologlar nimani o‘rganadi?","Qadimiy moddiy yodgorliklarni",["Faqat yulduzlarni","Faqat tilni","Faqat ob-havoni"]],
+["Ipak ishlab chiqarish qadimda qaysi davlatda rivojlangan?","Xitoy",["Islandiya","Kanada","Braziliya"]],
+["Qadimgi Olimpiya o‘yinlari qayerda boshlangan?","Yunoniston",["Misr","Rim","Hindiston"]],
+["Qog‘oz ishlab chiqarish qadimda qaysi davlatda kashf etilgan?","Xitoy",["Meksika","Norvegiya","Peru"]],
+["Tarixiy manba nima?","O‘tmish haqida ma’lumot beruvchi dalil",["Faqat taxmin","Faqat ertak","Faqat reklama"]],
+["Feodalizm tarixda qanday tuzum?","Yer egaligiga asoslangan tuzum",["Faqat savdo turi","Din nomi","Daryo nomi"]],
+["Renessans so‘zining ma’nosi?","Uyg‘onish",["Urush","Sovuq","Ko‘chish"]],
+["Yozuvning paydo bo‘lishi nimaga yordam berdi?","Ma’lumotni saqlashga",["Faqat ovga","Faqat qurilishga","Faqat sayohatga"]],
+["Qadimgi Mesopotamiya qaysi ikki daryo oralig‘ida edi?","Dajla va Furot",["Nil va Kongo","Amu va Sirdaryo","Gang va Hind"]],
+["Buyuk geografik kashfiyotlar asosan qaysi davrda kuchaydi?","XV–XVII asrlarda",["V–VI asrlarda","XXI asrda","I asrda"]],
+["Demokratiya so‘zi nimani anglatadi?","Xalq hokimiyati",["Podsho hokimiyati","Harbiy boshqaruv","Savdo yo‘li"]],
+["Tarixiy sana nimani ko‘rsatadi?","Voqea sodir bo‘lgan vaqtni",["Joyning rangini","Odam bo‘yini","Haroratni"]],
+["Qal’alar qadimda asosan nima uchun qurilgan?","Himoya uchun",["Faqat ekin ekish uchun","Faqat dars uchun","Faqat savdo uchun"]],
+["Numizmatika nimani o‘rganadi?","Tangalarni",["O‘simliklarni","Tillarni","Yulduzlarni"]],
+["Muzeyning vazifalaridan biri?","Tarixiy buyumlarni saqlash",["Buyumlarni yo‘qotish","Faqat ovqat tayyorlash","Faqat sport o‘tkazish"]]
+],
+uzhistory:[
+["O‘zbekiston poytaxti qaysi shahar?","Toshkent",["Samarqand","Buxoro","Termiz"]],
+["Amir Temur qaysi shaharda tavallud topgan?","Kesh (Shahrisabz) yaqinida",["Xiva","Qo‘qon","Toshkent"]],
+["Samarqand qaysi tarixiy inshoot bilan mashhur?","Registon",["Kolosseum","Eyfel minorasi","Toj Mahal"]],
+["O‘zbekiston mustaqilligi qachon e’lon qilingan?","1991-yil 31-avgust",["1990-yil 1-sentabr","1992-yil 8-dekabr","1989-yil 21-oktabr"]],
+["O‘zbekiston Konstitutsiyasi ilk bor qachon qabul qilingan?","1992-yil 8-dekabr",["1991-yil 1-sentabr","1993-yil 21-mart","1990-yil 8-dekabr"]],
+["Jaloliddin Manguberdi kim bo‘lgan?","Xorazmshohlar hukmdori",["Shoir","Astronom","Me’mor"]],
+["Alisher Navoiy qaysi shaharda tug‘ilgan?","Hirot",["Buxoro","Xiva","Qo‘qon"]],
+["Buxoro tarixda qaysi jihati bilan mashhur?","Ilm va madaniyat markazi",["Dengiz porti","Vulqon","Muzlik"]],
+["Xiva qaysi tarixiy majmuasi bilan mashhur?","Ichan qal’a",["Registon","Ark de Triomphe","Akropol"]],
+["Amir Temur davlatining poytaxti qaysi shahar edi?","Samarqand",["Xiva","Nukus","Andijon"]],
+["“Avesto” qaysi qadimiy din bilan bog‘liq?","Zardushtiylik",["Buddaviylik","Xristianlik","Sintoizm"]],
+["Buyuk Ipak yo‘li O‘zbekiston hududidan o‘tganmi?","Ha",["Yo‘q","Faqat dengizdan","Faqat shimoldan"]],
+["Abu Rayhon Beruniy kim bo‘lgan?","Olim va qomusiy alloma",["Faqat sarkarda","Faqat rassom","Faqat savdogar"]],
+["Ibn Sino qaysi sohada mashhur?","Tibbiyot va ilm-fan",["Faqat sport","Faqat musiqa","Faqat dengizchilik"]],
+["O‘zbekiston davlat tili qaysi til?","O‘zbek tili",["Rus tili","Ingliz tili","Tojik tili"]],
+["O‘zbekiston bayrog‘i qachon qabul qilingan?","1991-yil 18-noyabr",["1992-yil 8-dekabr","1991-yil 31-avgust","1992-yil 2-iyul"]],
+["O‘zbekiston gerbi qachon qabul qilingan?","1992-yil 2-iyul",["1991-yil 18-noyabr","1992-yil 8-dekabr","1993-yil 1-yanvar"]],
+["O‘zbekiston madhiyasi qachon qabul qilingan?","1992-yil 10-dekabr",["1991-yil 31-avgust","1992-yil 2-iyul","1990-yil 1-sentabr"]],
+["Termiz qaysi viloyat markazi?","Surxondaryo",["Qashqadaryo","Samarqand","Jizzax"]],
+["Qadimgi Afrosiyob yodgorligi qaysi shaharda?","Samarqand",["Xiva","Termiz","Qo‘qon"]]
+],
+geography:[
+["Yerning tabiiy yo‘ldoshi nima?","Oy",["Quyosh","Mars","Venera"]],
+["Eng katta okean qaysi?","Tinch okeani",["Hind okeani","Shimoliy Muz okeani","Atlantika"]],
+["Yer yuzidagi eng baland tog‘ cho‘qqisi?","Everest",["Elbrus","Kilimanjaro","Mont-Blanc"]],
+["O‘zbekiston qaysi qit’ada?","Osiyo",["Afrika","Yevropa","Avstraliya"]],
+["Yer sharining modeli nima deyiladi?","Globus",["Barometr","Termometr","Kompas"]],
+["Dunyodagi eng katta materik?","Yevrosiyo",["Afrika","Avstraliya","Antarktida"]],
+["Sahro nima?","Qurg‘oqchil hudud",["Muzlik","O‘rmon","Daryo"]],
+["Ekvator Yerni qanday qismlarga ajratadi?","Shimoliy va Janubiy yarimsharlarga",["Sharq va G‘arbga","Faqat qit’alarga","Okeanlarga"]],
+["Xaritada ko‘k rang odatda nimani bildiradi?","Suvlarni",["Tog‘larni","Cho‘llarni","Shaharlarni"]],
+["Ob-havo hodisalarini o‘rganuvchi fan?","Meteorologiya",["Geologiya","Botanika","Zoologiya"]],
+["O‘zbekistonning eng yirik daryolaridan biri?","Amudaryo",["Nil","Amazonka","Dunay"]],
+["Kompas nimani aniqlashga yordam beradi?","Yo‘nalishni",["Haroratni","Massani","Vaqtni"]],
+["Vulqon otilganda nima chiqishi mumkin?","Lava",["Muz","Qumloq suv","Qor"]],
+["Yerning Quyosh atrofida aylanishi qancha davom etadi?","Taxminan bir yil",["Bir kun","Bir oy","Bir hafta"]],
+["Qaysi qit’ada doimiy mahalliy aholi yo‘q?","Antarktida",["Afrika","Osiyo","Yevropa"]],
+["O‘zbekiston qaysi davlatlar bilan chegaradosh?","Markaziy Osiyo davlatlari va Afg‘oniston",["Faqat Xitoy bilan","Faqat Eron bilan","Faqat Rossiya bilan"]],
+["Dunyoning eng katta issiq cho‘llaridan biri?","Sahroi Kabir",["Gobi muzligi","Amazonka o‘rmoni","Alp tog‘lari"]],
+["Dengiz sathidan balandlik nima bilan o‘lchanadi?","Metr bilan",["Litr bilan","Kilogramm bilan","Sekund bilan"]],
+["Daryoning boshlanish joyi nima deyiladi?","Manba",["Quyilish joyi","Sohil","Orol"]],
+["Globusda qutblar nechta?","Ikki",["Bir","Uch","To‘rt"]]
+],
+biology:[
+["O‘simliklar fotosintez uchun nimadan foydalanadi?","Quyosh nuridan",["Faqat qorong‘ilikdan","Faqat tuproqdan","Faqat shamoldan"]],
+["Inson nafas olishida qaysi organ asosiy?","O‘pka",["Jigar","Oshqozon","Buyrak"]],
+["Qon aylanishining asosiy a’zosi?","Yurak",["Oshqozon","O‘pka","Taloq"]],
+["O‘simlikning suv shimuvchi qismi?","Ildiz",["Gul","Meva","Barg tomiri"]],
+["Hujayra nima?","Tirik organizmning asosiy tuzilish birligi",["Tog‘ turi","Mineral","Daryo"]],
+["Baliqlar asosan nima bilan nafas oladi?","Jabra bilan",["O‘pka bilan","Teri orqali faqat","Tumshuq bilan"]],
+["Inson skeletining vazifalaridan biri?","Tanani tayanch bilan ta’minlash",["Ovqat hazm qilish","Qonni ishlab chiqarishning yagona joyi","Ko‘rish"]],
+["Asalarilar ko‘pincha nima yig‘adi?","Gul shirasi",["Tosh","Qum","Tuz"]],
+["O‘simlikning fotosintez qiluvchi asosiy qismi?","Barg",["Ildiz uchi","Urug‘ po‘sti","Gul bandi"]],
+["Sutemizuvchilar bolalarini nima bilan boqadi?","Sut bilan",["Faqat urug‘ bilan","Faqat suv bilan","Nafas bilan"]],
+["Inson tanasida qon tomirlar orqali nima tashiladi?","Kislorod va moddalar",["Faqat suyak","Faqat soch","Faqat tirnoq"]],
+["Qaysi hayvon amfibiyaga kiradi?","Qurbaqa",["Burgut","Mushuk","Ilon"]],
+["Oziq zanjiri nimani ko‘rsatadi?","Organizmlar orasidagi oziqlanish bog‘liqligini",["Faqat ob-havoni","Faqat haroratni","Faqat masofani"]],
+["O‘simlik urug‘idan nima rivojlanishi mumkin?","Yangi o‘simlik",["Tosh","Metall","Suv"]],
+["Qaysi organ ovqatni hazm qilishda qatnashadi?","Oshqozon",["Yurak","Quloq","O‘pka"]],
+["Tirik organizmlar yashaydigan muhit nima deyiladi?","Yashash muhiti",["Orbit","Magnit","Qit’a nomi"]],
+["Qushlarning tanasi odatda nima bilan qoplangan?","Pat bilan",["Tangacha bilan","Jun bilan","Qobiq bilan"]],
+["Changlanish nima bilan bog‘liq?","Gul changining ko‘chishi",["Barg to‘kilishi","Ildiz qurishi","Mevaning muzlashi"]],
+["Qaysi biri umurtqali hayvon?","Baliq",["Yomg‘ir chuvalchangi","Chig‘anoq","Chumoli"]],
+["Ekologiya nimani o‘rganadi?","Organizmlar va muhit munosabatini",["Faqat sonlarni","Faqat qadimgi yozuvlarni","Faqat tog‘ jinslarini"]]
+],
+physics:[
+["Kuchning SI birligi?","Nyuton",["Joul","Vatt","Paskal"]],
+["Tezlik formulasi qaysi?","v = s/t",["v = s × t","v = t/s","v = s + t"]],
+["Haroratni o‘lchaydigan asbob?","Termometr",["Barometr","Ampermetr","Kompas"]],
+["Elektr toki kuchining birligi?","Amper",["Volt","Metr","Kilogramm"]],
+["Energiyaning birligi?","Joul",["Nyuton","Sekund","Amper"]],
+["Yorug‘lik taxminan qanday tarqaladi?","To‘g‘ri chiziq bo‘ylab",["Faqat aylana bo‘ylab","Faqat pastga","Faqat suvda"]],
+["Zichlik formulasi?","ρ = m/V",["ρ = V/m","ρ = m×V","ρ = m+V"]],
+["Vaqtning SI birligi?","Sekund",["Metr","Kilogramm","Kelvin"]],
+["Elektr kuchlanishining birligi?","Volt",["Amper","Joul","Nyuton"]],
+["Ishning oddiy formulasi?","A = F·s",["A = F/s","A = F+s","A = s/F"]],
+["Tovush qaysi muhitda tarqalmaydi?","Vakuumda",["Havoda","Suvda","Qattiq jismda"]],
+["Yer jismlarni qaysi kuch bilan tortadi?","Gravitatsiya",["Ishqalanishsiz kuch","Faqat elektr kuchi","Magnitning o‘zi"]],
+["Massa birligi?","Kilogramm",["Metr","Sekund","Volt"]],
+["Quvvat birligi?","Vatt",["Joul","Nyuton","Amper"]],
+["Suvning odatiy qaynash harorati dengiz sathida?","100°C",["0°C","50°C","200°C"]],
+["Magnitning nechta qutbi bor?","Ikki",["Bir","Uch","To‘rt"]],
+["Ishqalanish kuchi harakatga qanday ta’sir qilishi mumkin?","Qarshilik ko‘rsatadi",["Doim tezlashtiradi","Har doim yo‘qoladi","Massani yo‘q qiladi"]],
+["Jismning harakat holatini o‘zgartiruvchi sabab?","Kuch",["Rang","Hid","Shaklning nomi"]],
+["Yassi ko‘zgu tasvirni qanday qaytaradi?","Ko‘zgudagi aksni hosil qiladi",["Tovushga aylantiradi","Issiqlikni yo‘q qiladi","Massani oshiradi"]],
+["Tokni o‘lchaydigan asbob?","Ampermetr",["Termometr","Barometr","Dinamometr"]]
+],
+chemistry:[
+["Suvning kimyoviy formulasi?","H₂O",["CO₂","O₂","NaCl"]],
+["Kislorodning belgisi?","O",["K","N","C"]],
+["Osh tuzining formulasi?","NaCl",["H₂O","CO₂","HCl"]],
+["Karbonat angidrid formulasi?","CO₂",["O₂","H₂","NaCl"]],
+["Moddaning eng kichik kimyoviy xossalarni saqlovchi zarrachasi?","Molekula",["Santimetr","Litr","Daraja"]],
+["Atom yadrosida nimalar bor?","Proton va neytron",["Faqat elektron","Faqat molekula","Faqat foton"]],
+["Davriy jadvalni tuzgan olim?","Dmitriy Mendeleyev",["Nyuton","Darvin","Pifagor"]],
+["Kislotali eritmada pH odatda qanday?","7 dan kichik",["7 ga teng doim","7 dan katta","0 bo‘lishi shart"]],
+["Oltinning kimyoviy belgisi?","Au",["Ag","Fe","O"]],
+["Temirning belgisi?","Fe",["F","Ir","T"]],
+["Kumushning kimyoviy belgisi?","Ag",["Au","S","Si"]],
+["Havoda eng ko‘p uchraydigan gaz?","Azot",["Kislorod","Karbonat angidrid","Vodorod"]],
+["Yonish uchun odatda qaysi gaz zarur?","Kislorod",["Azot","Geliy","Neon"]],
+["Sof suv odatiy bosimda necha °C da muzlaydi?","0°C",["10°C","50°C","100°C"]],
+["Atom raqami nimani bildiradi?","Protonlar sonini",["Molekulalar hajmini","Rangni","Haroratni"]],
+["Vodorodning belgisi?","H",["V","O","He"]],
+["Kimyoviy element nima?","Bir xil proton sonli atomlar turi",["Aralashma","Eritma","Faqat suyuqlik"]],
+["Havoning o‘zi sof modda hisoblanadimi?","Yo‘q, aralashma",["Ha, element","Ha, sof metall","Ha, bitta atom"]],
+["Ishqoriy metallardan biri?","Natriy",["Kislorod","Xlor","Geliy"]],
+["Oksidlar odatda qaysi element bilan birikmalar?","Kislorod",["Faqat oltin","Faqat geliy","Faqat kumush"]]
+],
+informatics:[
+["Kompyuterning asosiy hisoblash qurilmasi?","Protsessor",["Klaviatura","Sichqoncha","Monitor"]],
+["Klaviatura nima uchun ishlatiladi?","Ma’lumot kiritish",["Faqat chiqarish","Faqat chop etish","Elektr saqlash"]],
+["Monitorning vazifasi?","Ma’lumotni ekranda ko‘rsatish",["Matn kiritish","Tovush yozish","Internet tarqatish"]],
+["1 bayt necha bit?","8",["2","4","16"]],
+["Internet nima?","Butunjahon kompyuter tarmog‘i",["Faqat bitta dastur","Monitor turi","Fayl kengaytmasi"]],
+["Brauzer nima uchun kerak?","Veb-sahifalarni ochish",["Faqat rasm chizish","Kompyuterni yoqish","Elektr o‘lchash"]],
+["Fayl nima?","Nomlangan ma’lumotlar to‘plami",["Kompyuter stoli","Kabel turi","Faqat ekran"]],
+["Parol qanday bo‘lishi kerak?","Kuchli va maxfiy",["Hammaga ma’lum","Faqat 123","Ismning o‘zi"]],
+["Algoritm nima?","Amallar ketma-ketligi",["Kompyuter rangi","Internet kabeli","Monitor turi"]],
+["Python nima?","Dasturlash tili",["Operatsion tizimning yagona nomi","Printer","Brauzer"]],
+["HTML asosan nima uchun ishlatiladi?","Veb-sahifa tuzilishini yaratish",["Faqat video montaj","Elektr hisoblash","Rasm skanerlash"]],
+["CSS nima uchun ishlatiladi?","Veb-sahifa dizaynini bezash",["Faqat ma’lumot o‘chirish","Tarmoq kabeli","Operativ xotira"]],
+["Kompyuter virusi nima?","Zararli dastur turi",["Foydali qurilma","Monitor","Klaviatura tugmasi"]],
+["Zaxira nusxa nima uchun kerak?","Ma’lumotni yo‘qolishdan saqlash",["Internetni o‘chirish","Ekranni kattalashtirish","Tovushni oshirish"]],
+["RAM nima?","Tezkor xotira",["Qattiq diskning yagona nomi","Monitor","Sichqoncha"]],
+["Operatsion tizimga misol?","Android",["HTML","Wi-Fi","USB"]],
+["Qidiruv tizimi nima qiladi?","Internetdan ma’lumot topadi",["Faqat matn yozadi","Kompyuterni sovitadi","Tok ishlab chiqaradi"]],
+["USB nima uchun ishlatilishi mumkin?","Ma’lumot uzatish",["Faqat suratga olish","Faqat ovoz chiqarish","Harorat o‘lchash"]],
+["Elektron pochta nima uchun kerak?","Elektron xabar yuborish",["Faqat rasm chizish","Kompyuterni o‘chirish","O‘yin boshqarish"]],
+["Dasturlashda xato nima deyiladi?","Bug",["Browser","Pixel","Folder"]]
+]
+};
+
+let questions=[], index=0, correct=0, chosen=false;
+const $=id=>document.getElementById(id);
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function start(){
+  let key=$("subject").value;
+  questions=shuffle([...facts[key]]).slice(0,20);
+  index=0; correct=0;
+  $("setup").hidden=true;
+  $("result").hidden=true;
+  $("quiz").hidden=false;
+  show();
+}
+function show(){
+  chosen=false;
+  let q=questions[index];
+  $("progress").textContent=`Savol ${index+1}/20`;
+  $("score").textContent=`To‘g‘ri: ${correct}`;
+  $("bar").style.width=(index/20*100)+"%";
+  $("question").textContent=q[0];
+  $("answers").innerHTML="";
+  $("next").disabled=true;
+  $("next").textContent=index===19?"Natijani ko‘rish":"Keyingi savol →";
+  shuffle([q[1],...q[2]]).forEach(answer=>{
+    let b=document.createElement("button");
+    b.textContent=answer;
+    b.onclick=()=>{
+      if(chosen)return;
+      chosen=true;
+      const buttons=[...$("answers").children];
+      buttons.forEach(x=>{
+        x.disabled=true;
+        if(x.textContent===q[1])x.classList.add("correct");
+      });
+      if(answer===q[1]){
+        correct++;
+        b.classList.add("correct");
+      } else b.classList.add("wrong");
+      $("score").textContent=`To‘g‘ri: ${correct}`;
+      $("next").disabled=false;
+    };
+    $("answers").appendChild(b);
+  });
+}
+function nextQuestion(){
+  if(index<19){index++;show();return;}
+  $("quiz").hidden=true;
+  $("result").hidden=false;
+  let percent=Math.round(correct/20*100);
+  $("finalscore").textContent=`${correct}/20 — ${percent}%`;
+  $("message").textContent=percent>=90?"A’lo natija!":percent>=70?"Yaxshi natija!":percent>=50?"Yana mashq qiling!":"Mavzularni takrorlab, qayta urinib ko‘ring.";
+}
+function back(){
+  $("result").hidden=true;
+  $("setup").hidden=false;
+}
+</script>
+</body>
+</html>

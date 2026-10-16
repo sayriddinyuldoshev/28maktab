@@ -1,0 +1,21 @@
+
+# Python fayllari
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Maxfiy sozlamalar va tokenlar
+.env.*
+secrets.json
+config_secret.py
+
+# Vaqtinchalik fayllar
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Zaxira nusxalar
+*.bak
+
