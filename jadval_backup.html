@@ -17,8 +17,132 @@ button.remove{background:#b52d3a}
 img{width:100%;height:auto;border-radius:12px;margin-top:12px}
 small{color:#64748b;line-height:1.6}
 </style>
+
+<style id="UZBEK-MILLIY-DIZAYN">
+:root {
+  --milliy-yashil: #075e54;
+  --milliy-turkuaz: #087f70;
+  --milliy-oltin: #d9ad55;
+  --milliy-oq: #fffaf0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background-color: var(--milliy-oq);
+  background-image:
+    radial-gradient(circle at 12px 12px,
+      rgba(217,173,85,.12) 2px, transparent 3px);
+  background-size: 28px 28px;
+  color: #193b35;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+header, nav, .header, .navbar {
+  background-color: var(--milliy-yashil);
+  color: white;
+}
+h1, h2, h3 {
+  color: var(--milliy-yashil);
+}
+header h1, header h2, nav h1, nav h2 {
+  color: white;
+}
+a {
+  color: var(--milliy-turkuaz);
+}
+button, input[type="button"], input[type="submit"],
+.btn, .button {
+  background: var(--milliy-yashil);
+  color: white;
+  border: 1px solid var(--milliy-oltin);
+  border-radius: 9px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+button:hover, input[type="button"]:hover,
+input[type="submit"]:hover, .btn:hover {
+  background: var(--milliy-turkuaz);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 2px solid var(--milliy-oltin);
+  border-radius: 10px;
+}
+th {
+  background: var(--milliy-yashil);
+  color: white;
+  padding: 12px 8px;
+}
+td {
+  padding: 10px 8px;
+  border: 1px solid #e6d8b9;
+  text-align: center;
+}
+tr:nth-child(even) td {
+  background: #f5f0e3;
+}
+input, select, textarea {
+  max-width: 100%;
+  padding: 10px;
+  border: 1px solid #c9b989;
+  border-radius: 8px;
+  font: inherit;
+}
+img { max-width: 100%; height: auto; }
+main, section, .container {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+footer {
+  background: var(--milliy-yashil);
+  color: white;
+  border-top: 4px solid var(--milliy-oltin);
+  padding: 20px;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  body { font-size: 14px; }
+  table { font-size: 12px; }
+  th, td { padding: 7px 5px; }
+  main, section, .container { width: 100%; padding: 10px; }
+}
+</style>
+
+
+<style id="maktab-common-menu-style">
+.maktab-menu{
+  background:#075e45;color:white;padding:12px;
+  display:flex;flex-wrap:wrap;gap:9px;
+  align-items:center;justify-content:center;
+  font-family:Arial,sans-serif;position:relative;z-index:10
+}
+.maktab-menu a{
+  color:white;text-decoration:none;padding:10px 13px;
+  border-radius:8px;background:#ffffff20;font-size:15px
+}
+.maktab-menu a:hover{background:#ffffff38}
+.maktab-menu .brand{font-weight:bold;margin-right:8px}
+@media(max-width:480px){
+  .maktab-menu{gap:6px;padding:10px 6px}
+  .maktab-menu a{padding:9px;font-size:13px}
+}
+</style>
+
 </head>
 <body>
+
+<nav class="maktab-menu" aria-label="Asosiy menyu">
+  <span class="brand">🏫 28-MAKTAB</span>
+  <a href="index.html">Bosh sahifa</a>
+  <a href="yangiliklar.html">Yangiliklar</a>
+  <a href="test.html">Bilimni sinash</a>
+  <a href="jadval.html">Dars jadvali</a>
+  <a href="admin.html">Admin panel</a>
+</nav>
+
 <header>
 <h1>🏫 28-maktab</h1>
 <p>Dars jadvali — rasm orqali</p>

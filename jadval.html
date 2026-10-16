@@ -148,7 +148,7 @@ footer {
 <p>Dars jadvali — rasm orqali</p>
 </header>
 <main>
-<div class="card">
+<div class="card" id="adminBox" style="display:none">
 <h2>📷 Jadvalni kiritish</h2>
 <label for="sinf">Sinf nomi</label>
 <input id="sinf" placeholder="Masalan: 8-B">
@@ -165,6 +165,8 @@ footer {
 </main>
 <script>
 const key="maktab28_jadvallar";
+const isAdmin = sessionStorage.getItem("28maktab_admin_logged_in") === "yes";
+if (isAdmin) document.getElementById("adminBox").style.display = "block";
 let selected="";
 const file=document.getElementById("rasm");
 file.addEventListener("change",()=>{
@@ -206,11 +208,13 @@ function show(){
  localStorage.setItem(key,JSON.stringify(a));show();
  }
  };
- box.append(title,image,del);
+ box.append(title,image);
+ if (isAdmin) box.appendChild(del);
  document.getElementById("list").appendChild(box);
  });
 }
 document.getElementById("save").onclick=()=>{
+ if (!isAdmin) { alert("Jadvalni faqat admin qo‘sha oladi."); return; }
  const sinf=document.getElementById("sinf").value.trim();
  if(!sinf||!selected){alert("Sinf nomi va rasmni tanlang.");return;}
  const items=getItems();

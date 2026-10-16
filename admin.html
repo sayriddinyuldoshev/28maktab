@@ -61,7 +61,7 @@ h2{margin-top:0}
 <main>
 <section id="login" class="card">
 <h2>🔐 Admin kirish</h2>
-<p class="small">Boshlang‘ich parol: 2800</p>
+<p class="small">Boshlang‘ich parol: 2011</p>
 <input id="password" type="password" placeholder="Admin parolini kiriting">
 <button onclick="login()">Kirish</button>
 <p id="loginError" style="color:#c62828"></p>
@@ -145,7 +145,7 @@ document.getElementById("imageInput").addEventListener("change", function(){
 });
 
 function login(){
-  const saved = localStorage.getItem(PASS_KEY) || "2800";
+  const saved = localStorage.getItem(PASS_KEY) || "2011";
   if(document.getElementById("password").value === saved){
     sessionStorage.setItem("28maktab_admin_logged_in","yes");
     showPanel();
